@@ -1,19 +1,23 @@
 (defproject parseapp-cljs "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+  :description "clojurescript to parse cloud code"
+  :url "https://github.com/utahstreetlabs/parseapp-cljs"
+  :repositories {
+    "sonatype-oss-public" "https://oss.sonatype.org/content/groups/public/"
+  }
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-1896"]
+                 [org.clojure/core.async "0.1.0-SNAPSHOT"]
                  [ring "1.1.8"]]
   :plugins [[lein-cljsbuild "0.3.2"]
             [lein-ring "0.8.3"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
-  :cljsbuild { 
+  :cljsbuild {
     :builds {
       :main {
         :source-paths ["src/cljs"]
-        :compiler {:output-to "resources/public/js/cljs.js"
-                   :optimizations :simple
+        :compiler {:optimizations :simple
                    :pretty-print true}
         :jar true}}}
   :main parseapp-cljs.server
