@@ -15,6 +15,6 @@
     (try
       ~@body
       (catch parseapp-cljs.parse/ParseError e#
-        (.error status (.-message e#)))
+        (throw (js/Error. (.-message e#))))
       (catch js/Error e#
-        (.error status (.-message e#))))))
+        (throw (js/Error. (.-message e#)))))))
