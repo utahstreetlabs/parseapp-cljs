@@ -1,4 +1,5 @@
 *.swp
 /target
 /pom.xml
+/pom.xml.asc
 
