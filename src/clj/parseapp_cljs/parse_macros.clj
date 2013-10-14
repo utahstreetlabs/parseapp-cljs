@@ -7,6 +7,9 @@
 (defmacro defjob [name args & body]
   `(.job (.-Cloud js/Parse) ~(str name) (fn ~args ~@body)))
 
+(defmacro defhook [class hook-name args & body]
+  `(. (.-Cloud js/Parse) ~hook-name ~class (fn ~args ~@body)))
+
 (defmacro defparsetype [name & [methods options]]
   `(def ~name (.extend (.-Object js/Parse) ~(str name) ~methods ~options)))
 
