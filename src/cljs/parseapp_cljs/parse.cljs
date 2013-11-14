@@ -6,10 +6,11 @@
                    [parseapp-cljs.async-macros :refer [<?]])
   (:refer-clojure :exclude [find]))
 
-(def Query (.-Query js/Parse))
-(def ParseError (.-Error js/Parse))
-(def GeoPoint (.-GeoPoint js/Parse))
 (def File (.-File js/Parse))
+(def GeoPoint (.-GeoPoint js/Parse))
+(def Object (.-Object js/Parse))
+(def ParseError (.-Error js/Parse))
+(def Query (.-Query js/Parse))
 (def User (.-User js/Parse))
 
 (defn- fix-arguments
@@ -62,6 +63,8 @@
          (if existing-user
            (>! ch existing-user)
            (>! ch (<? (save (User.) {"username" email "email" email "password" password "displayName" name})))))
+       (catch js/Error e
+         (>! ch e))
        (catch ParseError e
          (>! ch e))))
     ch))
