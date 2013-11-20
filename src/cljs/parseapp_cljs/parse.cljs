@@ -71,15 +71,15 @@
 
 (defn log-in [email password]
   (let [ch (chan 1)]
-    (.logIn User email password (clj->js {"success" (fn [] (put! ch true))
-                                          "error" (fn [error] (put! ch error))}))
+    (.logIn User email password (clj->js {"success" (fn [user] (put! ch user))
+                                          "error" (fn [user error] (put! ch error))}))
     ch))
 
 (defn sign-up [name email password]
   (let [ch (chan 1)]
     (.signUp User email password (clj->js {:email email :displayName name})
-             (clj->js {"success" (fn [] (put! ch true))
-                       "error" (fn [error] (put! ch error))}))
+             (clj->js {"success" (fn [user] (put! ch user))
+                       "error" (fn [user error] (put! ch error))}))
     ch))
 
 (defn get-by-id [type id & [{:keys [includes] :or {includes []}}]]
