@@ -20,11 +20,3 @@
   (let [ch (chan 1)]
     (.then promise (put-result-callback ch) (put-result-callback ch))
     ch))
-
-(defn fetch
-  "returns a channel that will be given the result of fetching this object"
-  [unfetched-object]
-  (prom->chan (.fetch unfetched-object)))
-
-(defn save [object properties]
-  (prom->chan (.save object (clj->js properties))))
