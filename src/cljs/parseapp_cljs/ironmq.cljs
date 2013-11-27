@@ -1,7 +1,8 @@
 (ns parseapp-cljs.ironmq
   (:require [cemerick.url :refer [url URL]]
             [cljs.core.async :refer [timeout]]
-            [parseapp-cljs.async :refer [prom->chan]])
+            [parseapp-cljs.async :refer [prom->chan]]
+            [parseapp-cljs.parse :refer [fix-arguments]])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [parseapp-cljs.parse-macros :refer [go-try-catch]]
                    [parseapp-cljs.async-macros :refer [<?]]))
@@ -78,7 +79,7 @@
                            "Authorization" (str "OAuth " (:token client))}
                  :url (str url)
                  :body body}]
-    (go
+    (go-try-catch
       (loop [try 0]
         (let [response (js->clj (<? (prom->chan (.httpRequest (.-Cloud js/Parse) (clj->js options)))))
               status (.-status response)]
@@ -96,7 +97,7 @@
   client - an IronMQ client created with create-client."
   [client]
   (go-try-catch
-    (map (fn [q] (get q "name"))
+    (map (fn [q] (aget q "name"))
          (<? (request client "GET" "/queues" nil)))))
 
 (defn queue-size
@@ -106,7 +107,7 @@
   queue - the name of a queue, passed as a string."
   [client queue]
   (go-try-catch
-    (get (<? (request client "GET" (str "/queues/" queue) nil))
+    (aget (<? (request client "GET" (str "/queues/" queue) nil))
          "size")))
 
 (defn post-messages
@@ -119,13 +120,14 @@
              create-message."
   [client queue & messages]
   (go-try-catch
-    (get (<? (request client "POST" (str "/queues/" queue "/messages")
-                      (clj->js {:messages (map
-                                           (fn [m]
-                                             (if (string? m)
-                                               (create-message m) m))
-                                               messages)})))
-         "ids")))
+    (fix-arguments
+      (aget (<? (request client "POST" (str "/queues/" queue "/messages")
+                        (clj->js {:messages (map
+                                             (fn [m]
+                                               (if (string? m)
+                                                 (create-message m) m))
+                                                 messages)})))
+           "ids"))))
 
 (defn post-message
   "Pushes a single message to a queue.
@@ -146,8 +148,9 @@
   n - the number of messages to retrieve, passed as an int."
   [client queue n]
   (go-try-catch
-    (get (<? (request client "GET" (str "/queues/" queue "/messages?n=" n) nil))
-         "messages")))
+    (fix-arguments
+      (aget (<? (request client "GET" (str "/queues/" queue "/messages?n=" n) nil))
+           "messages"))))
 
 (defn get-message
   "Returns a single message from a queue.

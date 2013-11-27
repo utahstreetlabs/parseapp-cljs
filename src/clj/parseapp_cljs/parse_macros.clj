@@ -17,7 +17,5 @@
   `(go
     (try
       ~@body
-      (catch parseapp-cljs.parse/ParseError e#
-        (throw (js/Error. (.-message e#))))
-      (catch js/Error e#
-        (throw (js/Error. (.-message e#)))))))
+      (catch :default e#
+        e#))))
