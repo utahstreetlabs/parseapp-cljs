@@ -6,7 +6,8 @@
   }
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/core.async "0.1.242.0-44b1e3-alpha"]]
+  :dependencies [[org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
+                 [com.cemerick/url "0.1.0"]]
   :plugins [[lein-cljsbuild "0.3.2"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
