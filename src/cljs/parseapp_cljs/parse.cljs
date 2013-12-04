@@ -21,39 +21,90 @@
 (defn save [parse-object properties]
   (let [ch (chan 1)]
     (.save parse-object (clj->js properties)
-           (clj->js {"success" (fn [saved-object] (put! ch saved-object))
-                     "error" (fn [object error] (put! ch error))}))
+           (clj->js {"success" (fn [saved-object]
+                                 (put! ch saved-object)
+                                 (close! ch))
+                     "error" (fn [object error]
+                               (put! ch error)
+                               (close! ch))}))
     ch))
 
 (defn fetch [parse-object]
   (let [ch (chan 1)]
     (.fetch parse-object
-            (clj->js {"success" (fn [fetched-object] (put! ch fetched-object))
-                      "error" (fn [error] (put! ch error))}))
+            (clj->js {"success" (fn [fetched-object]
+                                  (put! ch fetched-object)
+                                  (close! ch))
+                      "error" (fn [object error]
+                                (put! ch error)
+                                (close! ch))}))
     ch))
 
-(defn find-all [cls]
+(defn log-in [email password]
   (let [ch (chan 1)]
-    (-> (Query. cls)
-      (.find (clj->js {"success" (fn [objects]
-                                   (when objects
-                                     (put! ch (fix-arguments objects)))
-                                   (close! ch))
-                       "error" (fn [error] (put! ch error))})))
+    (.logIn User email password (clj->js {"success" (fn [user]
+                                                      (put! ch user)
+                                                      (close! ch))
+                                          "error" (fn [user error]
+                                                    (put! ch error)
+                                                    (close! ch))}))
     ch))
+
+(defn sign-up [name email password]
+  (let [ch (chan 1)]
+    (.signUp User email password (clj->js {:email email :displayName name})
+             (clj->js {"success" (fn [user]
+                                   (put! ch user)
+                                   (close! ch))
+                       "error" (fn [user error]
+                                 (put! ch error)
+                                 (close! ch))}))
+    ch))
+
+(defn get-by-id [type id & [{:keys [includes] :or {includes []}}]]
+  (let [ch (chan 1)
+        query (Query. type)]
+    (doseq [include includes]
+      (.include query (clj->js include)))
+    (.get query id (clj->js {"success" (fn [object]
+                                         (when object (put! ch object))
+                                         (close! ch))
+                             "error" (fn [object error]
+                                 (put! ch error)
+                                 (close! ch))}))
+    ch))
+
+(defn destroy [object]
+  (let [ch (chan 1)]
+    (.destroy object (clj->js {"success" (fn []
+                                           (put! ch true)
+                                           (close! ch))
+                               "error" (fn [error]
+                                         (put! ch error)
+                                         (close! ch))}))
+    ch))
+
+(defn find [query]
+  (let [ch (chan 1)]
+    (.find query (clj->js {"success" (fn [objects]
+                                       (put! ch (fix-arguments objects))
+                                       (close! ch))
+                           "error" (fn [error]
+                                     (put! ch error)
+                                     (close! ch))}))
+    ch))
+
+(defn find-first [query]
+  (go (first (<? (find query)))))
+
+(defn find-user-by-email [email]
+  (find-first (-> (Query. User) (.equalTo "email" email))))
+
+(defn find-all [cls]
+  (find (Query. cls)))
 
 (defn find-all-users []
   (find-all User))
-
-(defn find-user-by-email [email]
-  (let [ch (chan 1)]
-    (-> (Query. User) (.equalTo "email" email)
-        (.find (clj->js {"success" (fn [objects]
-                                     (let [user (aget objects 0)]
-                                       (when user (put! ch user))
-                                       (close! ch)))
-                         "error" (fn [error] (put! ch error))})))
-    ch))
 
 (defn find-or-create-user [email name password]
   (let [ch (chan 1)]
@@ -67,51 +118,4 @@
          (>! ch e))
        (catch ParseError e
          (>! ch e))))
-    ch))
-
-(defn log-in [email password]
-  (let [ch (chan 1)]
-    (.logIn User email password (clj->js {"success" (fn [user] (put! ch user))
-                                          "error" (fn [user error] (put! ch error))}))
-    ch))
-
-(defn sign-up [name email password]
-  (let [ch (chan 1)]
-    (.signUp User email password (clj->js {:email email :displayName name})
-             (clj->js {"success" (fn [user] (put! ch user))
-                       "error" (fn [user error] (put! ch error))}))
-    ch))
-
-(defn get-by-id [type id & [{:keys [includes] :or {includes []}}]]
-  (let [ch (chan 1)
-        query (Query. type)]
-    (doseq [include includes]
-      (.include query (clj->js include)))
-    (.get query id (clj->js {"success" (fn [object]
-                                         (when object (put! ch object))
-                                         (close! ch))
-                             "error" (fn [object error]
-                                 (put! ch error))}))
-    ch))
-
-(defn find-first [query]
-  (let [ch (chan 1)]
-    (.find query (clj->js {"success" (fn [objects]
-                                       (let [object (aget objects 0)]
-                                         (when object (put! ch object))
-                                         (close! ch)))
-                           "error" (fn [error] (put! ch error))}))
-    ch))
-
-(defn find [query]
-  (let [ch (chan 1)]
-    (.find query (clj->js {"success" (fn [objects]
-                                       (put! ch (fix-arguments objects)))
-                           "error" (fn [error] (put! ch error))}))
-    ch))
-
-(defn destroy [object]
-  (let [ch (chan 1)]
-    (.destroy object (clj->js {"success" (fn [] (put! ch true))
-                               "error" (fn [error] (put! ch error))}))
     ch))

@@ -13,7 +13,7 @@
 
 (defn put-result-callback [channel]
   (fn [object]
-    (when object (put! channel object))
+    (when-not (nil? object) (put! channel object))
     (close! channel)))
 
 (defn prom->chan [promise]
