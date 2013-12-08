@@ -1,0 +1,4 @@
+#!/bin/bash
+
+lein with-profile test do clean, cljsbuild once test && \
+cd test_app && parse deploy test && parse log test

@@ -2,4 +2,5 @@
 /target
 /pom.xml
 /pom.xml.asc
-
+/test_app/config/local.json
+/test_app/cloud/cljs.js

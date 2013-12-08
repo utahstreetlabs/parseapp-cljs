@@ -18,4 +18,9 @@
         :source-paths ["src/cljs"]
         :compiler {:optimizations :whitespace
                    :pretty-print true}
-        :jar true}}})
+        :jar true}
+
+      :test {:source-paths ["src/cljs" "test/cljs"]
+             :compiler {:output-to "test_app/cloud/cljs.js"
+                        :optimizations :whitespace
+                        :pretty-print true}}}})
