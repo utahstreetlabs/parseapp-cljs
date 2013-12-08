@@ -119,3 +119,13 @@
        (catch ParseError e
          (>! ch e))))
     ch))
+
+(defn destroy-all [objects]
+  (let [ch (chan 1)]
+    (.destroyAll Object objects (clj->js {"success" (fn []
+                                                      (put! ch true)
+                                                      (close! ch))
+                                          "error" (fn [error]
+                                                    (put! ch error)
+                                                    (close! ch))}))
+    ch))

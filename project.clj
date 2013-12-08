@@ -11,7 +11,7 @@
                  [com.tvachon/core.async "0.1.0"]]
   :plugins [[lein-cljsbuild "1.0.0"]]
   :hooks [leiningen.cljsbuild]
-  :source-paths ["src/clj"]
+  :source-paths ["src/clj" "test/clj"]
   :cljsbuild {
     :builds {
       :main {
