@@ -11,11 +11,37 @@
 (defn run-tests []
   (go-catch
    (try
-    ;; the widget should be saved and it should get an id
-    (is (not (nil? (aget (<? (save (Widget.) {:name "Chris"})) "id"))))
+     (is= 0 (<? (parse/count-all Widget)))
 
-    ;; this should fail because name is a string column
-    (is (throws? (<? (save (Widget.) {:name 1}))))
+     (is (not (parse/persisted? (Widget.))))
+
+     ;; the widget should be saved and it should get an id
+     (let [bob-ch (save (Widget.) {:name "Bob" :type "meaty"})
+           tom-ch (save (Widget.) {:name "Tom" :type "meaty"})
+           cal-ch (save (Widget.) {:name "Cal" :type "veggie"})
+           bob (<? bob-ch)
+           tom (<? tom-ch)
+           cal (<? cal-ch)]
+
+       (is (parse/persisted? bob))
+
+       ;; make sure our implementation of ILookup works
+       (is= "Bob" (:name bob))
+
+       ;; this should throw because name is a string column
+       (is (throws? (<? (save (Widget.) {:name 808}))))
+
+       (is= 3 (<? (parse/count-all Widget)))
+
+       (is= bob (<? (parse/find-first (-> (parse/Query. Widget) (.equalTo "name" "Bob")))))
+
+       (is= bob (<? (parse/get-by-id Widget (parse/object-id bob))))
+
+       (is= 2 (<? (parse/count (-> (parse/Query. Widget) (.equalTo "type" "meaty")))))
+       (is= #{bob tom} (set (<? (parse/find (-> (parse/Query. Widget) (.equalTo "type" "meaty"))))))
+
+       (is (<? (parse/destroy tom)))
+       (is= 2 (<? (parse/count-all Widget))))
 
     (finally
       (<? (parse/destroy-all (<! (parse/find-all Widget))))))))
