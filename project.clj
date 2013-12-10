@@ -6,21 +6,28 @@
   }
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojurescript "0.0-2080"]
-                 [com.cemerick/url "0.1.0"]
-                 [com.tvachon/core.async "0.2.0"]]
+  :dependencies [[com.cemerick/url "0.1.0"]
+                 [com.tvachon/core.async "0.2.0"]
+                 [org.clojure/tools.reader "0.8.1"]]
   :plugins [[lein-cljsbuild "1.0.0"]]
   :hooks [leiningen.cljsbuild]
-  :source-paths ["src/clj" "test/clj"]
+  :source-paths ["src/clj" "test/clj"
+                 ;; use a custom version of ClojureScript
+                 "comp/clojurescript/src/clj"
+                 "comp/clojurescript/src/cljs"]
   :cljsbuild {
     :builds {
       :main {
         :source-paths ["src/cljs"]
         :compiler {:optimizations :whitespace
-                   :pretty-print true}
+                   :pretty-print true
+                   :target :nodejs
+                   :no-header true}
         :jar true}
 
       :test {:source-paths ["src/cljs" "test/cljs"]
              :compiler {:output-to "test_app/cloud/cljs.js"
                         :optimizations :whitespace
-                        :pretty-print true}}}})
+                        :pretty-print true
+                        :target :nodejs
+                        :no-header true}}}})
