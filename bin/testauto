@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# kill stuff in this process group when this process is killed
+# thanks, http://stackoverflow.com/questions/360201/kill-background-process-when-shell-script-exit/2173421#2173421
+trap "kill 0" SIGINT SIGTERM EXIT
+
+echo "starting parse auto deploy"
+(cd test_app && parse develop test) &
+echo "starting cljs auto build"
+(lein with-profile test cljsbuild auto test) &
+
+wait

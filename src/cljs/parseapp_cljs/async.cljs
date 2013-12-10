@@ -7,9 +7,14 @@
   (or (instance? (.-Error js/Parse) x) (instance? js/Error x)))
 
 (defn throw-err [x]
-  (if (error? x)
-    (throw x)
-    x))
+  (cond
+   (instance? js/Error x)
+   (throw x)
+
+   (instance? (.-Error js/Parse) x)
+   (throw (js/Error. (str "Parse Error "(.-code x)": "(.-message x))))
+
+   :else x))
 
 (defn put-result-callback [channel]
   (fn [object]
