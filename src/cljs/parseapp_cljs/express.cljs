@@ -42,12 +42,11 @@
   (boolean (current-user)))
 
 (defn force-login
-  ([url-getter]
-    (fn [handler]
-      (fn [request response]
-        (if (logged-in?)
-          (handler request response)
-          (if (.-xhr request)
-            (render-json response 400 {:error "You must be logged in to perform this action."})
-            (redirect-after-post response (url-getter request)))))))
-  ([] (force-login #("/"))))
+  ([handler url-getter]
+    (fn [request response]
+      (if (logged-in?)
+        (handler request response)
+        (if (.-xhr request)
+          (render-json response 400 {:error "You must be logged in to perform this action."})
+          (redirect-after-post response (url-getter request))))))
+  ([handler] (force-login handler (constantly "/"))))
