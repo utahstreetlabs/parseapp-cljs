@@ -71,7 +71,9 @@
                   nil
                   (:host client)
                   (:port client)
-                  path)
+                  path
+                  nil
+                  nil)
         url-str (str url)
         options {:method method
                  :headers {"Content-Type" "application/json"
@@ -85,11 +87,7 @@
               status (.-status response)]
           (if (= status 200)
             (js->clj (.-data response))
-            (if (and (= status 503) (< try (:max-retries client)))
-              (do
-                (<? (timeout (* (Math/pow 4 try) 100 (Math/random))))
-                (recur (+ try 1)))
-              (js/Error. (str status)))))))))
+            (js/Error. (str status))))))))
 
 (defn queues
   "Returns a list of queues that a client has access to.
