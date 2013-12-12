@@ -2,8 +2,8 @@
   (:require [cljs.core.async :as async :refer [chan close! put!]]
             [parseapp-cljs.core])
   (:require-macros [cljs.core.async.macros :refer [go alt!]]
-                   [parseapp-cljs.parse-macros :as parse :refer [go-try-catch]]
-                   [parseapp-cljs.async-macros :refer [<?]])
+                   [parseapp-cljs.parse-macros :as parse]
+                   [parseapp-cljs.async-macros :refer [<? go-catch]])
   (:refer-clojure :exclude [find count]))
 
 (def File (.-File js/Parse))
@@ -12,6 +12,8 @@
 (def ParseError (.-Error js/Parse))
 (def Query (.-Query js/Parse))
 (def User (.-User js/Parse))
+(def Push (.-Push js/Parse))
+(def Installation (.-Installation js/Parse))
 
 (extend-type ParseObject
   ILookup
@@ -21,8 +23,10 @@
   (-equiv [o other] (and (instance? (type o) other) (= (.-id o) (.-id other))))
 
   IHash
-  (-hash [o] (hash (str (.-className o)"-"(.-id o))))
-)
+  (-hash [o] (hash (str (.-className o)"-"(.-id o)))))
+
+(defn use-master-key! []
+  (.useMasterKey (.-Cloud js/Parse)))
 
 (defn fix-arguments
   "Fix an arguments object, turning it into a normal javascript array"
@@ -172,4 +176,34 @@
                                                "error" (fn [error]
                                                          (put! ch error)
                                                          (close! ch))}))
+    ch))
+
+
+;;;; push notifications ;;;;
+
+
+(defn ios-installations-query []
+  (doto (Query. Installation)
+    (.equalTo "deviceType" "ios")))
+
+(defn user-ios-installation-query [user]
+  (doto (ios-installations-query)
+    (.equalTo "user" user)))
+
+(defn user-ios-installed? [user]
+  (use-master-key!)
+  (go-catch
+   (< 0 (<? (count (user-ios-installation-query user))))))
+
+(defn send-push-notification [query data]
+  (let [ch (chan 1)]
+    (.send Push
+           (clj->js {:where query
+                     :data data})
+           (clj->js {:success (fn []
+                                (put! ch true)
+                                (close! ch))
+                     :error (fn [error]
+                              (put! ch error)
+                              (close! ch))}))
     ch))
