@@ -19,15 +19,13 @@
     :builds {
       :main {
         :source-paths ["src/cljs"]
-        :compiler {:optimizations :whitespace
-                   :pretty-print true
-                   :target :nodejs
-                   :no-header true}
         :jar true}
 
       :test {:source-paths ["src/cljs" "test/cljs"]
-             :compiler {:output-to "test_app/cloud/cljs.js"
+             :compiler {:output-dir "test_app/cloud/cljs"
+                        :output-to "test_app/cloud/cljs/cljs.js"
+                        :source-map "test_app/cloud/cljs/cljs.js.map"
                         :optimizations :whitespace
                         :pretty-print true
                         :target :nodejs
-                        :no-header true}}}})
+                        :preamble ["parse_preamble.js"]}}}})

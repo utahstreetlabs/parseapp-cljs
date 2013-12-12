@@ -1,1 +1,1 @@
-require('cloud/cljs.js');
+require('cloud/cljs/cljs.js');
