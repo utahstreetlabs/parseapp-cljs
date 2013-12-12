@@ -46,6 +46,20 @@
                                (close! ch))}))
     ch))
 
+(defn save-all
+  [objects]
+  (let [ch (chan 1)]
+    (.saveAll ParseObject (clj->js objects)
+              (clj->js {:success (fn [list b]
+                                   (put! ch list)
+                                   (close! ch))
+                        :error (fn [e]
+                                 (.log js/console "ERRORR")
+
+                                 (put! ch e)
+                                 (close! ch))}))
+    ch))
+
 (defn fetch [parse-object]
   (let [ch (chan 1)]
     (.fetch parse-object

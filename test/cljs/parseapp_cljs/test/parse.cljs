@@ -7,6 +7,12 @@
             [parseapp-cljs.parse :as parse :refer [save]]))
 
 (defparsetype Widget)
+(defn map->Widget [map]
+  (let [widget (Widget.)]
+    (doseq [[name value] map]
+      (.set widget name value))
+    widget))
+
 
 (defn run-tests []
   (go-catch
@@ -41,7 +47,12 @@
        (is= #{bob tom} (set (<? (parse/find (-> (parse/Query. Widget) (.equalTo "type" "meaty"))))))
 
        (is (<? (parse/destroy tom)))
-       (is= 2 (<? (parse/count-all Widget))))
+       (is= 2 (<? (parse/count-all Widget)))
+
+       (let [[jim rob] (<? (parse/save-all (map map->Widget [{:name "Jim"} {:name "Rob"}])))]
+         (is (parse/persisted? jim))
+         (is (parse/persisted? rob))
+         (is= 4 (<? (parse/count-all Widget)))))
 
     (finally
       (<? (parse/destroy-all (<! (parse/find-all Widget))))))))
