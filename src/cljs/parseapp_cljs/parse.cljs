@@ -17,7 +17,7 @@
 
 (extend-type ParseObject
   ILookup
-  (-lookup [obj key] (.get obj (name key)))
+  (-lookup [obj key] (if (= key :id) (.-id obj) (.get obj (name key))))
 
   IEquiv
   (-equiv [o other] (and (instance? (type o) other) (= (.-id o) (.-id other))))
