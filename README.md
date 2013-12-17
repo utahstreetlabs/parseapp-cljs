@@ -2,6 +2,10 @@
 
 An idiomatic Clojure library for building Parse Cloud Code apps.
 
+*WARNING* this is all alpha: subject to API changes without major version bumps
+
+*WARNING* currently using a custom version of ClojureScript (see `comp/clojurescript` submodule) - use at your own risk
+
 ## Quick Start
 
 For best results, pair with the parseapp lein template:
