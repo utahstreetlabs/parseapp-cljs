@@ -23,7 +23,49 @@
   (-equiv [o other] (and (instance? (type o) other) (= (.-id o) (.-id other))))
 
   IHash
-  (-hash [o] (hash (str (.-className o)"-"(.-id o)))))
+  (-hash [o] (hash (str (.-className o)"-"(.-id o))))
+
+  IEncodeClojure
+  (-js->clj [parse-object {:keys [keywordize-keys] :as options}]
+    (reduce (fn [m key] (assoc m
+                          (if keywordize-keys (keyword key) key)
+                          (apply js->clj (.get parse-object key) (flatten (vec options)))))
+            {}
+            (.keys js/Object (.toJSON parse-object)))))
+
+(defn attrs->clj
+  "Recursively transforms JavaScript arrays into ClojureScript
+  vectors, and JavaScript objects into ClojureScript maps.  With
+  option ':keywordize-keys true' will convert object fields from
+  strings to keywords.
+
+Ported from js->clj to work around Parse insanity with object detection"
+  ([x] (attrs->clj x {:keywordize-keys false}))
+  ([x & opts]
+    (cond
+      (satisfies? IEncodeClojure x)
+      (-js->clj x (apply array-map opts))
+
+      (seq opts)
+      (let [{:keys [keywordize-keys]} opts
+            keyfn (if keywordize-keys keyword str)
+            f (fn thisfn [x]
+                (cond
+                  (seq? x)
+                  (doall (map thisfn x))
+
+                  (coll? x)
+                  (into (empty x) (map thisfn x))
+
+                  (array? x)
+                  (vec (map thisfn x))
+
+                  (identical? (js/Object x) x)
+                  (into {} (for [k (.keys js/Object x)]
+                             [(keyfn k) (attrs->clj (aget x k))]))
+
+                  :else x))]
+        (f x)))))
 
 (defn use-master-key! []
   (.useMasterKey (.-Cloud js/Parse)))
