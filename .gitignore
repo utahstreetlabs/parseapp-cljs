@@ -4,3 +4,5 @@
 /pom.xml.asc
 /test_app/config/local.json
 /test_app/cloud/cljs
+/.nrepl-port
+/.lein-repl-history
