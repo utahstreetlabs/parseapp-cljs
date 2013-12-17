@@ -1,6 +1,7 @@
 (ns parseapp-cljs.parse
   (:require [cljs.core.async :as async :refer [chan close! put!]]
-            [parseapp-cljs.core])
+            [parseapp-cljs.core]
+            [schema.core :as schema])
   (:require-macros [cljs.core.async.macros :refer [go alt!]]
                    [parseapp-cljs.parse-macros :as parse]
                    [parseapp-cljs.async-macros :refer [<? go-catch]])
@@ -80,6 +81,23 @@ Ported from js->clj to work around Parse insanity with object detection"
 
 (defn object-id [obj]
   (.-id obj))
+
+(defn add-validator [methods options]
+  (if (:schema options)
+    [(assoc methods :validate
+            (fn [attrs opts]
+              (try
+                (schema/validate (:schema options) (attrs->clj attrs :keywordize-keys true))
+                false
+                (catch :default e
+                  e))))
+     (dissoc options :schema)]
+    [methods options]))
+
+(defn extend-parse-object [subclass-name methods options]
+  (let [[updated-methods updated-options] (add-validator methods options)]
+    (.extend (.-Object js/Parse) subclass-name (clj->js updated-methods) (clj->js updated-options))))
+
 
 (defn save [parse-object properties]
   (let [ch (chan 1)]

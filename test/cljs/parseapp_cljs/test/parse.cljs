@@ -4,13 +4,17 @@
                    [parseapp-cljs.parse-macros :refer [defparsetype]]
                    [parseapp-cljs.async-macros :refer [<? go-catch]])
   (:require [cljs.core.async :as async :refer [chan]]
-            [parseapp-cljs.parse :as parse :refer [save]]))
+            [parseapp-cljs.parse :as parse :refer [save]]
+            [schema.core :as s]))
 
-(defparsetype Widget)
+(def WidgetValidator {(s/required-key :name) s/String
+                      s/Keyword s/Any})
+(defparsetype Widget {} {:schema WidgetValidator})
+
 (defn map->Widget [map]
   (let [widget (Widget.)]
-    (doseq [[name value] map]
-      (.set widget name value))
+    (doseq [[key value] map]
+      (.set widget (name key) value))
     widget))
 
 
@@ -33,6 +37,9 @@
 
        ;; make sure our implementation of ILookup works
        (is= "Bob" (:name bob))
+
+       ;; this should throw because name is undefined and the validator forbids that
+       (is (throws? (<? (save (Widget.) {:name nil}))))
 
        ;; this should throw because name is a string column
        (is (throws? (<? (save (Widget.) {:name 808}))))
