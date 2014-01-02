@@ -11,7 +11,7 @@
   `(. (.-Cloud js/Parse) ~hook-name ~class (fn ~args ~@body)))
 
 (defmacro defparsetype [name & [methods options]]
-  `(def ~name (.extend (.-Object js/Parse) ~(str name) ~methods ~options)))
+  `(def ~name (parseapp-cljs.parse/extend-parse-object ~(str name) ~methods ~options)))
 
 (defmacro go-try-catch [& body]
   `(go

@@ -8,7 +8,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[com.cemerick/url "0.1.0"]
                  [com.tvachon/core.async "0.2.0"]
-                 [org.clojure/tools.reader "0.8.1"]]
+                 [org.clojure/tools.reader "0.8.1"]
+                 [prismatic/schema "0.1.9"]]
   :plugins [[lein-cljsbuild "1.0.0"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj" "test/clj"
@@ -22,9 +23,7 @@
         :jar true}
 
       :test {:source-paths ["src/cljs" "test/cljs"]
-             :compiler {:output-dir "test_app/cloud/cljs"
-                        :output-to "test_app/cloud/cljs/cljs.js"
-                        :source-map "test_app/cloud/cljs/cljs.js.map"
+             :compiler {:output-to "test_app/cloud/cljs/cljs.js"
                         :optimizations :whitespace
                         :pretty-print true
                         :target :nodejs
