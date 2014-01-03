@@ -5,7 +5,7 @@
        ~@body
        .listen))
 
-(defmacro go-endpoint [[request response] & body]
+(defmacro go-catch-http [[request response] & body]
   `(fn [~request ~response]
      (cljs.core.async.macros/go
        (try
