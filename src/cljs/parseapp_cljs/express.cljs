@@ -11,14 +11,15 @@
 
 (defn new-express-app [config]
   (let [app (express)
-        cookie-secret (:cookie-secret config)]
+        cookie-secret (:cookie-secret config)
+        cookie-max-age (or (:cookie-max-age config) 3600000)]
     (.set app "views" (get config :views-dir "cloud/views"))
     (.set app "view engine" (get config :view-engine "jade"))
     (when (:body-parser config) (.use app (.bodyParser express)))
     (when (:parse-raw-body config) (.use app (parse-express-raw-body)))
     (when cookie-secret
       (.use app (.cookieParser express cookie-secret))
-      (.use app (parse-express-cookie-session (clj->js {:cookie {:maxAge 3600000}}))))
+      (.use app (parse-express-cookie-session (clj->js {:cookie {:maxAge cookie-max-age}}))))
     (.use app (.-router app))
     (doseq [tag (:static config)] (static app tag))
     app))
