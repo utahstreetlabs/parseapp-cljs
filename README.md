@@ -34,6 +34,42 @@ $ cat parse_preamble.js
 $
 ```
 
+### Running tests
+
+First, make sure you've initialized and updated the compiler submodule:
+
+```
+git submodule init
+git submodule update
+```
+
+Next, deploy the tests to a test project. Make a new parse app and add the keys to test_app/config/local.json:
+
+```
+{
+    "applications": {
+        "test": {
+            "applicationId": "yourTestAppId",
+            "masterKey": "yourTestAppKey"
+        }
+    }
+}
+```
+
+And then deploy with `bin/testonce`
+
+Finally, run the tests with
+
+```
+curl -X POST \\
+  -H "X-Parse-Application-Id: yourTestAppId" \\
+  -H "X-Parse-REST-API-Key: yourTestAppKey" \\
+  -H "Content-Type: application/json" \\
+  -d '{}' \\
+  https://api.parse.com/1/functions/runTests
+```
+
+When developing tests you may want to autodeploy to Parse with `bin/testauto`
 
 ## License
 
