@@ -22,6 +22,7 @@
       (.use app (parse-express-cookie-session (clj->js {:cookie {:maxAge cookie-max-age}}))))
     (.use app (.-router app))
     (doseq [tag (:static config)] (static app tag))
+    (when (:locals config) (.locals app (clj->js (:locals config))))
     app))
 
 (defn render
