@@ -18,7 +18,13 @@
 
 (extend-type ParseObject
   ILookup
-  (-lookup [obj key] (if (= key :id) (.-id obj) (.get obj (name key))))
+  (-lookup [obj key]
+    (case key
+      :id (.-id obj)
+      ;; wrap dates so they're easier to serialize
+      :createdAt (js/Date. (.-createdAt obj))
+      :updatedAt (js/Date. (.-updatedAt obj))
+       (.get obj (name key))))
 
   IEquiv
   (-equiv [o other] (and (instance? (type o) other) (= (.-id o) (.-id other))))
