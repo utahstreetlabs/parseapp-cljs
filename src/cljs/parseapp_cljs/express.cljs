@@ -19,6 +19,7 @@
     (when (:parse-raw-body config) (.use app (parse-express-raw-body)))
     (when cookie-secret
       (.use app (.cookieParser express cookie-secret))
+      (.use app (.cookieSession express {:cookie {:maxAge cookie-max-age}}))
       (.use app (parse-express-cookie-session (clj->js {:cookie {:maxAge cookie-max-age}}))))
     (.use app (.-router app))
     (doseq [tag (:static config)] (static app tag))
