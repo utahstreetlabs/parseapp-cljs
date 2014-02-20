@@ -209,7 +209,7 @@ Ported from js->clj to work around Parse insanity with object detection"
   (count (Query. cls)))
 
 (defn find-first [query]
-  (go (first (<? (find (.limit query 1))))))
+  (go-catch (first (<? (find (.limit query 1))))))
 
 (defn find-user-by-email [email]
   (find-first (-> (Query. User) (.equalTo "email" email))))
