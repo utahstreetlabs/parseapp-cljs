@@ -124,8 +124,6 @@ Ported from js->clj to work around Parse insanity with object detection"
                                    (put! ch list)
                                    (close! ch))
                         :error (fn [e]
-                                 (.log js/console "ERRORR")
-
                                  (put! ch e)
                                  (close! ch))}))
     ch))
