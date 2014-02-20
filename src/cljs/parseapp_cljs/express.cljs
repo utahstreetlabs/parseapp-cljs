@@ -24,6 +24,8 @@
     (.use app (.-router app))
     (doseq [tag (:static config)] (static app tag))
     (when (:locals config) (.locals app (clj->js (:locals config))))
+    (when (:uses config)
+      (doseq [use (:uses config)] (.use app use)))
     app))
 
 (defn render
