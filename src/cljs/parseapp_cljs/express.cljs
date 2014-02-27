@@ -19,10 +19,13 @@
     (when (:parse-raw-body config) (.use app (parse-express-raw-body)))
     (when cookie-secret
       (.use app (.cookieParser express cookie-secret))
+      (.use app (.cookieSession express {:cookie {:maxAge cookie-max-age}}))
       (.use app (parse-express-cookie-session (clj->js {:cookie {:maxAge cookie-max-age}}))))
     (.use app (.-router app))
     (doseq [tag (:static config)] (static app tag))
     (when (:locals config) (.locals app (clj->js (:locals config))))
+    (when (:uses config)
+      (doseq [use (:uses config)] (.use app use)))
     app))
 
 (defn render
