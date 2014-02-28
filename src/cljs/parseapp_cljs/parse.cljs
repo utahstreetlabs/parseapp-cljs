@@ -48,7 +48,7 @@
 
 Ported from js->clj to work around Parse insanity with object detection"
   ([x] (attrs->clj x {:keywordize-keys false}))
-  ([x & opts]
+  ([x opts]
     (cond
       (satisfies? IEncodeClojure x)
       (-js->clj x (apply array-map opts))
@@ -69,7 +69,7 @@ Ported from js->clj to work around Parse insanity with object detection"
 
                   (identical? (js/Object x) x)
                   (into {} (for [k (.keys js/Object x)]
-                             [(keyfn k) (attrs->clj (aget x k))]))
+                             [(keyfn k) (attrs->clj (aget x k) opts)]))
 
                   :else x))]
         (f x)))))
@@ -93,7 +93,7 @@ Ported from js->clj to work around Parse insanity with object detection"
     [(assoc methods :validate
             (fn [attrs opts]
               (try
-                (schema/validate (:schema options) (attrs->clj attrs :keywordize-keys true))
+                (schema/validate (:schema options) (attrs->clj attrs {:keywordize-keys true}))
                 false
                 (catch :default e
                   e))))
