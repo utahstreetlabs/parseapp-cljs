@@ -21,15 +21,18 @@
       (.use app (.cookieParser express cookie-secret))
       (.use app (.cookieSession express {:cookie {:maxAge cookie-max-age}}))
       (.use app (parse-express-cookie-session (clj->js {:cookie {:maxAge cookie-max-age}}))))
+    (when (:locals config) (.locals app (clj->js (:locals config))))
 
     (when (:uses config)
       (doseq [use (:uses config)] (.use app use)))
     (when (:initializer config) ((:initializer config) app))
 
     (.use app (.-router app))
-    (doseq [tag (:static config)] (static app tag))
-    (when (:locals config) (.locals app (clj->js (:locals config))))
 
+    (doseq [tag (:static config)] (static app tag))
+
+    (when (:error-handlers config)
+      (doseq [handler (:error-handlers config)] (.use app handler)))
     app))
 
 (defn render
