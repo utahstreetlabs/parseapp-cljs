@@ -40,39 +40,18 @@
             {}
             (.keys js/Object (.toJSON parse-object)))))
 
+(extend-type default
+  IEncodeClojure
+  (-js->clj [object {:keys [keywordize-keys] :as options}]
+    (if (identical? (js/Object object) object)
+      (let [keyfn (if keywordize-keys keyword str)]
+        (into {} (for [k (.keys js/Object object)]
+                   [(keyfn k) (js->clj (aget object k) :keywordize-keys keywordize-keys)])))
+      object)))
+
 (defn attrs->clj
-  "Recursively transforms JavaScript arrays into ClojureScript
-  vectors, and JavaScript objects into ClojureScript maps.  With
-  option ':keywordize-keys true' will convert object fields from
-  strings to keywords.
-
-Ported from js->clj to work around Parse insanity with object detection"
-  ([x] (attrs->clj x {:keywordize-keys false}))
-  ([x opts]
-    (cond
-      (satisfies? IEncodeClojure x)
-      (-js->clj x (apply array-map opts))
-
-      (seq opts)
-      (let [{:keys [keywordize-keys]} opts
-            keyfn (if keywordize-keys keyword str)
-            f (fn thisfn [x]
-                (cond
-                  (seq? x)
-                  (doall (map thisfn x))
-
-                  (coll? x)
-                  (into (empty x) (map thisfn x))
-
-                  (array? x)
-                  (vec (map thisfn x))
-
-                  (identical? (js/Object x) x)
-                  (into {} (for [k (.keys js/Object x)]
-                             [(keyfn k) (attrs->clj (aget x k) opts)]))
-
-                  :else x))]
-        (f x)))))
+  ([x] (js->clj x))
+  ([x options] (apply js->clj x (flatten (vec options)))))
 
 (defn use-master-key! []
   (.useMasterKey (.-Cloud js/Parse)))
@@ -93,7 +72,7 @@ Ported from js->clj to work around Parse insanity with object detection"
     [(assoc methods :validate
             (fn [attrs opts]
               (try
-                (schema/validate (:schema options) (attrs->clj attrs {:keywordize-keys true}))
+                (schema/validate (:schema options) (js->clj attrs :keywordize-keys true))
                 false
                 (catch :default e
                   e))))
