@@ -34,11 +34,14 @@
 
   IEncodeClojure
   (-js->clj [parse-object {:keys [keywordize-keys] :as options}]
-    (reduce (fn [m key] (assoc m
-                          (if keywordize-keys (keyword key) key)
-                          (apply js->clj (.get parse-object key) (flatten (vec options)))))
-            {}
-            (.keys js/Object (.toJSON parse-object)))))
+    (let [keyfn (if keywordize-keys keyword str)]
+     (->
+      (reduce (fn [m key] (assoc m
+                            (keyfn key)
+                            (apply js->clj (.get parse-object key) (flatten (vec options)))))
+              {}
+              (.keys js/Object (.toJSON parse-object)))
+      (assoc (keyfn "id") (.-id parse-object))))))
 
 (extend-type default
   IEncodeClojure
