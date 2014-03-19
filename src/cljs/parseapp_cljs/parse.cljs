@@ -42,12 +42,26 @@
 
 (extend-type default
   IEncodeClojure
-  (-js->clj [object {:keys [keywordize-keys] :as options}]
-    (if (identical? (js/Object object) object)
-      (let [keyfn (if keywordize-keys keyword str)]
-        (into {} (for [k (.keys js/Object object)]
-                   [(keyfn k) (js->clj (aget object k) :keywordize-keys keywordize-keys)])))
-      object)))
+  (-js->clj [object {:keys [keywordize-keys] :as opts}]
+    (let [{:keys [keywordize-keys]} opts
+            keyfn (if keywordize-keys keyword str)
+            f (fn thisfn [x]
+                (cond
+                  (seq? x)
+                  (doall (map thisfn x))
+
+                  (coll? x)
+                  (into (empty x) (map thisfn x))
+
+                  (array? x)
+                  (vec (map thisfn x))
+
+                  (identical? (js/Object x) x)
+                  (into {} (for [k (.keys js/Object x)]
+                             [(keyfn k) (thisfn (aget x k))]))
+
+                  :else x))]
+        (f object))))
 
 (defn attrs->clj
   ([x] (js->clj x))
