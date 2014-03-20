@@ -83,10 +83,10 @@
                  :body body}]
     (go-try-catch
       (loop [try 0]
-        (let [response (js->clj (<? (prom->chan (.httpRequest (.-Cloud js/Parse) (clj->js options)))))
+        (let [response (<? (prom->chan (.httpRequest (.-Cloud js/Parse) (clj->js options))))
               status (.-status response)]
           (if (= status 200)
-            (js->clj (.-data response))
+            (js->clj (.-data response) :keywordize-keys true)
             (js/Error. (str status))))))))
 
 (defn queues
@@ -95,8 +95,7 @@
   client - an IronMQ client created with create-client."
   [client]
   (go-try-catch
-    (map (fn [q] (aget q "name"))
-         (<? (request client "GET" "/queues" nil)))))
+    (map :name (<? (request client "GET" "/queues" nil)))))
 
 (defn queue-size
   "Returns the size of a queue, as an int.
@@ -105,8 +104,7 @@
   queue - the name of a queue, passed as a string."
   [client queue]
   (go-try-catch
-    (aget (<? (request client "GET" (str "/queues/" queue) nil))
-         "size")))
+    (:size (<? (request client "GET" (str "/queues/" queue) nil)))))
 
 (defn post-messages
   "Pushes multiple messages to a queue in a single HTTP request.
@@ -119,13 +117,12 @@
   [client queue & messages]
   (go-try-catch
     (fix-arguments
-      (aget (<? (request client "POST" (str "/queues/" queue "/messages")
+      (:ids (<? (request client "POST" (str "/queues/" queue "/messages")
                         (clj->js {:messages (map
                                              (fn [m]
                                                (if (string? m)
                                                  (create-message m) m))
-                                                 messages)})))
-           "ids"))))
+                                                 messages)})))))))
 
 (defn post-message
   "Pushes a single message to a queue.
@@ -147,8 +144,7 @@
   [client queue n]
   (go-try-catch
     (fix-arguments
-      (aget (<? (request client "GET" (str "/queues/" queue "/messages?n=" n) nil))
-           "messages"))))
+      (:messages (<? (request client "GET" (str "/queues/" queue "/messages?n=" n) nil))))))
 
 (defn get-message
   "Returns a single message from a queue.
