@@ -16,14 +16,24 @@
 (def Push (.-Push js/Parse))
 (def Installation (.-Installation js/Parse))
 
+(defn coerce-to-date [thing]
+  (when thing (js/Date. thing)))
+
+(def time-regex (js/RegExp. "At$"))
+
+(defn coerce-on-key [object key]
+  (if (.match key time-regex)
+    (js/Date. object)
+    object))
+
 (extend-type ParseObject
   ILookup
   (-lookup [obj key]
     (case key
       :id (.-id obj)
       ;; wrap dates so they're easier to serialize
-      :createdAt (js/Date. (.-createdAt obj))
-      :updatedAt (js/Date. (.-updatedAt obj))
+      :createdAt (coerce-to-date (.-createdAt obj))
+      :updatedAt (coerce-to-date (.-updatedAt obj))
        (.get obj (name key))))
 
   IEquiv
@@ -38,10 +48,14 @@
      (->
       (reduce (fn [m key] (assoc m
                             (keyfn key)
-                            (apply js->clj (.get parse-object key) (flatten (vec options)))))
+                            (js->clj (coerce-on-key (.get parse-object key) key) :keywordize-keys keywordize-keys)))
               {}
               (.keys js/Object (.toJSON parse-object)))
-      (assoc (keyfn "id") (.-id parse-object))))))
+      (assoc (keyfn "id") (.-id parse-object))
+      (assoc (keyfn "createdAt") (coerce-to-date (.-createdAt parse-object)))
+      (assoc (keyfn "updatedAt") (coerce-to-date (.-updatedAt parse-object)))))))
+
+(def v8-object-type (type (.toJSON (ParseObject.))))
 
 (extend-type default
   IEncodeClojure
@@ -59,7 +73,11 @@
                   (array? x)
                   (vec (map thisfn x))
 
-                  (identical? (js/Object x) x)
+                  (identical? (type x) js/Object)
+                  (into {} (for [k (js-keys x)]
+                             [(keyfn k) (thisfn (aget x k))]))
+
+                  (identical? (type x) v8-object-type)
                   (into {} (for [k (.keys js/Object x)]
                              [(keyfn k) (thisfn (aget x k))]))
 
