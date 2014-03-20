@@ -30,7 +30,7 @@
            tom-ch (save (Widget.) {:name "Tom" :type "meaty"})
            cal-ch (save (Widget.) {:name "Cal" :type "veggie"})
            complex-ch (save (Widget.) {:name "Complex" :type "veggie"
-                                       :data (clj->js {:foo "bar" :buz "baz"})
+                                       :data (clj->js {:foo "bar" :buz ["baz"]})
                                        :stuff (clj->js [1 2 3])})
            bob (<? bob-ch)
            tom (<? tom-ch)
@@ -70,7 +70,7 @@
        ;; of IEncodeClojure to default, a liberty we take because we
        ;; are gods of this domain. or kings at least. or like, for
        ;; now, the only people here.
-       (is= {:foo "bar", :buz "baz"}
+       (is= {:foo "bar", :buz ["baz"]}
             (js->clj (:data (<? (parse/find-first (-> (parse/Query. Widget) (.equalTo "name" "Complex")))))
                      :keywordize-keys true)))
 
