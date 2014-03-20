@@ -1,4 +1,4 @@
-(defproject parseapp-cljs "0.21.0"
+(defproject parseapp-cljs "0.22.0-SNAPSHOT"
   :description "clojurescript to parse cloud code"
   :url "https://github.com/utahstreetlabs/parseapp-cljs"
   :repositories {
