@@ -36,14 +36,21 @@
       :updatedAt (coerce-to-date (.-updatedAt obj))
        (.get obj (name key))))
 
+  IAssociative
+  (-contains-key? [o k] (.has o (name k)))
+  (-assoc [o k v]
+    (let [new-obj (.clone o)]
+      (.set new-obj (name k) v)
+      new-obj))
+
   IEquiv
   (-equiv [o other] (and (instance? (type o) other) (= (.-id o) (.-id other))))
 
   IHash
   (-hash [o] (hash (str (.-className o)"-"(.-id o))))
 
-  IPrintWithWriter
-  (-pr-writer [parse-object writer opts]
+  IEncodeClojure
+  (-js->clj [parse-object opts]
     (-> (reduce (fn [m key] (assoc m
                               (keyword key)
                               (-> (.get parse-object key)
@@ -53,8 +60,11 @@
                 (.keys js/Object (.toJSON parse-object)))
         (assoc :id (.-id parse-object))
         (assoc :createdAt (coerce-to-date (.-createdAt parse-object)))
-        (assoc :updatedAt (coerce-to-date (.-updatedAt parse-object)))
-        (-pr-writer writer opts))))
+        (assoc :updatedAt (coerce-to-date (.-updatedAt parse-object)))))
+
+  IPrintWithWriter
+  (-pr-writer [parse-object writer opts]
+    (-pr-writer (-js->clj parse-object {:keywordize-keys true}) writer opts)))
 
 (def v8-object-type (type (.toJSON (ParseObject.))))
 
