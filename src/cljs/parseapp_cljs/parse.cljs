@@ -92,6 +92,12 @@
                   (into {} (for [k (.keys js/Object x)]
                              [(keyfn k) (thisfn (aget x k))]))
 
+                  ;; arrrg this is so fucked but I can't get a handle on the objects used
+                  ;; as request bodies
+                  (= "[object Object]" (str x))
+                  (into {} (for [k (.keys js/Object x)]
+                             [(keyfn k) (thisfn (aget x k))]))
+
                   :else x))]
         (f object))))
 
