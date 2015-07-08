@@ -164,6 +164,17 @@
                                 (close! ch))}))
     ch))
 
+(defn fetch-all [objects]
+  (let [ch (chan 1)]
+    (.fetchAll ParseObject (clj->js objects)
+               (clj->js {:success (fn [fetched-objects]
+                                    (put! ch fetched-objects)
+                                    (close! ch))
+                         :error (fn [error]
+                                  (put! ch error)
+                                  (close! ch))}))
+    ch))
+
 (defn log-in [email password]
   (let [ch (chan 1)]
     (.logIn User email password (clj->js {"success" (fn [user]
